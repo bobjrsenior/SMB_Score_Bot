@@ -6,6 +6,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"strings"
+	"net/http"
 	
     "golang.org/x/oauth2"
     "golang.org/x/oauth2/google"
@@ -23,6 +24,8 @@ type Record struct{
 }
 
 var records map[string][]Record
+var conf *jwt.Config
+var client *http.Client
 
 var (
 	email			= flag.String("email", "", "Developer Credential email")
@@ -31,8 +34,7 @@ var (
 	applicationName = "SMB_Score_Bot"
 )
 
-
-func main(){
+func initialize() {
 	flag.Parse()
 	if flag.NArg() != 0 {
 		return
@@ -40,7 +42,7 @@ func main(){
 
 	// Your credentials should be obtained from the Google
 	// Developer Console (https://console.developers.google.com).
-	conf := &jwt.Config{
+	conf = &jwt.Config{
 		Email: valueOrFileContents(*email, *emailFile),
 		// The contents of your RSA private key or your PEM file
 		// that contains a private key.
@@ -62,8 +64,18 @@ func main(){
 	}
 	// Initiate an http.Client, the following GET request will be
 	// authorized and authenticated on the behalf of user@example.com.
-	client := conf.Client(oauth2.NoContext)
+	client = conf.Client(oauth2.NoContext)
+}
+
+
+func main(){
+	initialize()
+	updateInformation()
 	
+
+}
+
+func updateInformation(){
 	svc, err := sheets.New(client)
 	if err != nil {
 		log.Fatalf("Unable to create Sheets service: %v", err)
@@ -111,7 +123,7 @@ func main(){
 				}
 			}*/
 		}
-	
+	}
 }
 
 func parseSMB1Time(data *sheets.GridData) {
