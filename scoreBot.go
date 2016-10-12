@@ -125,6 +125,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	message := m.Content
 	
+	if message == "!source" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "Source: https://github.com/bobjrsenior/SMB_Score_Bot")
+	}
+	
 	if message == "!update" && ((m.Author.Username == "Alex" && m.Author.Discriminator == "1806") || (m.Author.Username == "CyclopsDragon" && m.Author.Discriminator == "8762") || (m.Author.Username == "bobjrsenior" && m.Author.Discriminator == "8628")) {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "Updating")
 		skip++
