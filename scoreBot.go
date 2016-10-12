@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"strings"
 	"net/http"
+	"strconv"
+	"time"
 	
     "golang.org/x/oauth2"
     "golang.org/x/oauth2/google"
@@ -105,17 +107,85 @@ func initializeDiscord(){
 
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
-func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {	
 	// Ignore all messages created by the bot itself
-	if m.Author.ID == discBotID {
+	if retrievingData || m.Author.ID == discBotID {
 		return
 	}
 
-	// If the message is "ping" reply with "Pong!"
-	if m.Content == "ping" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Pong!")
+	message := m.Content
+	
+	index := 0
+	if len(message) >= 3 && message[index] == '!' {
+		index++
+		// TODO after the bot actually works
+		/*
+		game := ""
+		if message[index] == '1' {
+			game = "SMB1"
+			index++
+		}
+		else if message[index] == '2' {
+			game = "SMB2"
+			index++
+		}
+		else if message[index] == 'D' {
+			game = "SMBD"
+			index++
+		}
+		*/
+		difficulty := ""
+		if message[index] == 'b' {
+			difficulty = "Beginner"
+		}else if message[index] == 'a' {
+			difficulty = "Advanced"
+		}else if message[index] == 'e' {
+			difficulty = "Expert"
+		}else if message[index] == 'm' {
+			difficulty = "Master"
+		}else{
+			return
+		}
+		index++
+		if message[index] == 'x' {
+			index++
+			if len(message) == 3 {
+				return
+			}
+			difficulty += "Extra"
+		}
+		levelString := message[index:len(message)]
+		level, err := strconv.Atoi(levelString)
+		if err != nil {
+			return
+		}
+		returnMessage := ""
+		
+		smb1Time := retrieveRecordString("SMB1", difficulty, "Time", level)
+		smb1Score := retrieveRecordString("SMB1", difficulty, "Score", level)
+		if smb1Time != "" {
+			smb1Name := "SMB1 " + getLevelName("SMB1", difficulty, "Time", level)
+			returnMessage += smb1Name + ": " + smb1Time + ", " + smb1Score + "\n"
+		}
+		
+		smb2Time := retrieveRecordString("SMB2", difficulty, "Time", level)
+		smb2Score := retrieveRecordString("SMB2", difficulty, "Score", level)
+		if smb2Time != "" {
+			smb2Name := "SMB2 " + getLevelName("SMB2", difficulty, "Time", level)
+			returnMessage += smb2Name + ": " + smb2Time + ", " + smb2Score + "\n"
+		}
+		
+		smbDTime := retrieveRecordString("SMBD", difficulty, "Time", level)
+		smbDScore := retrieveRecordString("SMBD", difficulty, "Score", level)
+		if smbDTime != "" {
+			smbDName := "SMBD " + getLevelName("SMBD", difficulty, "Time", level)
+			returnMessage += smbDName + ": " + smbDTime + ", " + smbDScore + "\n"
+		}
+		
+		_, _ = s.ChannelMessageSend(m.ChannelID, returnMessage)
+		
 	}
-
+	
 	// If the message is "pong" reply with "Ping!"
 	if m.Content == "pong" {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "Ping!")
@@ -129,7 +199,7 @@ func main(){
 	initializeSheets()
 	updateInformation()
 	
-	//initializeDiscord()
+	initializeDiscord()
 }
 
 func updateInformation(){
@@ -182,7 +252,7 @@ func updateInformation(){
 				case "SMBDX Challenge Time":
 					parseSMBDTime(data)
 				break
-				case "SMBD Challenge Score":
+				case "SMBDX Challenge Score":
 					parseSMBDScore(data)
 				break
 			}
@@ -190,6 +260,12 @@ func updateInformation(){
 	}
 	
 	retrievingData = false
+	go func(waitInSeconds time.Duration) {
+		time.Sleep(waitInSeconds * time.Second)
+		initializeSheets()
+		updateInformation()
+	}(7200)
+	
 }
 
 func parseSMB1Time(data *sheets.GridData) {
@@ -280,7 +356,7 @@ func parseSMBDScore(data *sheets.GridData) {
 	//Store the row data and the key for this category
 	rowData := data.RowData
 	parseSection(rowData,"SMBDBeginnerScore", "SMBD", 3, 2, 40, false)
-	parseSection(rowData,"SMBDBeginnerExtraScore", "SMBD", 3, 48, 20, false)
+	parseSection(rowData,"SMBDBeginnerExtraScore", "SMBD", 48, 2, 20, false)
 	
 	parseSection(rowData,"SMBDAdvancedScore", "SMBD", 3, 7, 70, false)
 	parseSection(rowData,"SMBDAdvancedExtraScore", "SMBD", 78, 7, 20, false)
@@ -309,6 +385,31 @@ func parseSection(rowData []*sheets.RowData, mapKey string, game string, startRo
 		currentIndex++
 	}
 	records[mapKey][0].Index = currentIndex
+}
+
+func retrieveRecordString(game string, difficulty string, scoreType string, level int) (string){
+	mapKey := game + difficulty + scoreType
+	if _, ok := records[mapKey]; ok {
+		if level < records[mapKey][0].Index {
+			record := records[mapKey][level]
+			return scoreType + ": " + record.Time + " (" + record.Holder + ")"
+		}
+		return ""
+	}
+	return ""
+}
+
+func getLevelName(game string, difficulty string, scoreType string, level int) (string){
+	mapKey := game + difficulty + scoreType
+	if _, ok := records[mapKey]; ok {
+		
+		if level < records[mapKey][0].Index {
+			record := records[mapKey][level]
+			return "(" + record.Name + ")"
+		}
+		return ""
+	}
+	return ""
 }
 
 func valueOrFileContents(value string, filename string) string {
