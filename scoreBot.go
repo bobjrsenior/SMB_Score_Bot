@@ -229,7 +229,7 @@ func updateInformation(){
 	}
 
 	// Call for the SMB IL Spreadsheet
-	getCall := svc.Spreadsheets.Get("1KoneeqJzheHFYapQ_JfyxL9sI0X8_BE7ZEVMZt0t0bI")
+	getCall := svc.Spreadsheets.Get("1jK-flNQS_1PHXU9o_y7oyWiog8UF8141dXn-qmSSArk")
 	if getCall == nil{
 		fmt.Print("Error")
 		return
@@ -400,7 +400,7 @@ func parseSection(rowData []*sheets.RowData, mapKey string, game string, startRo
 	endRow := startRow + amount
 	
 	// Initialize the value in the map
-	records[mapKey] = make([]Record, 0, 250)
+	records[mapKey] = make([]Record, 0, amount)
 	records[mapKey] = append(records[mapKey], Record{Index: 1, Game: game, Name: "", Holder: "", Time: "", IsTime: isTime})
 	currentIndex := 1
 	
