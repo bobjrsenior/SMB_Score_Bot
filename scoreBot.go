@@ -115,7 +115,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	message := m.Content
 	
+	// Where we are in the message
 	index := 0
+	
+	// Make sure the message is long enough
 	if len(message) >= 3 && message[index] == '!' {
 		index++
 		// TODO after the bot actually works
@@ -134,6 +137,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			index++
 		}
 		*/
+		
+		// Retrieve the difficulty
 		difficulty := ""
 		if message[index] == 'b' {
 			difficulty = "Beginner"
@@ -147,6 +152,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 		index++
+		
+		// Check if it is an Extra stage
 		if message[index] == 'x' {
 			index++
 			if len(message) == 3 {
@@ -154,51 +161,63 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 			difficulty += "Extra"
 		}
+		
+		// Get the level requested and convert it into an int
 		levelString := message[index:len(message)]
 		level, err := strconv.Atoi(levelString)
 		if err != nil {
 			return
 		}
+		// Start building the return message
 		returnMessage := ""
 		
+		// Get the formatted record holders for smb1
 		smb1Time := retrieveRecordString("SMB1", difficulty, "Time", level)
 		smb1Score := retrieveRecordString("SMB1", difficulty, "Score", level)
+		// If a record exists
 		if smb1Time != "" {
+			// Add smb1 information to the return message
 			smb1Name := "SMB1 " + getLevelName("SMB1", difficulty, "Time", level)
 			returnMessage += smb1Name + ": " + smb1Time + ", " + smb1Score + "\n"
 		}
 		
+		// Get the formatted record holders for smb2
 		smb2Time := retrieveRecordString("SMB2", difficulty, "Time", level)
 		smb2Score := retrieveRecordString("SMB2", difficulty, "Score", level)
+		// If a record exists
 		if smb2Time != "" {
+			// Add smb2 information to the return message
 			smb2Name := "SMB2 " + getLevelName("SMB2", difficulty, "Time", level)
 			returnMessage += smb2Name + ": " + smb2Time + ", " + smb2Score + "\n"
 		}
 		
+		// Get the formatted record holders for smbd
 		smbDTime := retrieveRecordString("SMBD", difficulty, "Time", level)
 		smbDScore := retrieveRecordString("SMBD", difficulty, "Score", level)
+		// If a record exists
 		if smbDTime != "" {
-			smbDName := "SMBD " + getLevelName("SMBD", difficulty, "Time", level)
+			// Add smbd information to the return message
+			smbDName := "SMBDX " + getLevelName("SMBD", difficulty, "Time", level)
 			returnMessage += smbDName + ": " + smbDTime + ", " + smbDScore + "\n"
 		}
 		
 		_, _ = s.ChannelMessageSend(m.ChannelID, returnMessage)
 		
 	}
-	
-	// If the message is "pong" reply with "Ping!"
-	if m.Content == "pong" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Ping!")
-	}
 }
 
 
 func main(){
 	flag.Parse()
+	
 	retrievingData = false
+	
+	// Initialize google sheets connected
 	initializeSheets()
+	// Retrieve Information form the sheet
 	updateInformation()
 	
+	// Connect to discord
 	initializeDiscord()
 }
 
@@ -260,6 +279,8 @@ func updateInformation(){
 	}
 	
 	retrievingData = false
+	
+	// Wait for a bit, then update the information
 	go func(waitInSeconds time.Duration) {
 		time.Sleep(waitInSeconds * time.Second)
 		initializeSheets()
@@ -271,6 +292,7 @@ func updateInformation(){
 func parseSMB1Time(data *sheets.GridData) {
 	//Store the row data and the key for this category
 	rowData := data.RowData
+	
 	parseSection(rowData,"SMB1BeginnerTime", "SMB1", 3, 2, 10, true)
 	parseSection(rowData,"SMB1BeginnerExtraTime", "SMB1", 18, 2, 3, true)
 	parseSection(rowData,"SMB1BeginnerTimeAlt", "SMB1", 7, 22, 1, true)
@@ -289,6 +311,7 @@ func parseSMB1Time(data *sheets.GridData) {
 func parseSMB1Score(data *sheets.GridData) {
 	//Store the row data and the key for this category
 	rowData := data.RowData
+	
 	parseSection(rowData,"SMB1BeginnerScore", "SMB1", 3, 2, 10, false)
 	parseSection(rowData,"SMB1BeginnerExtraScore", "SMB1", 18, 2, 3, false)
 	
@@ -305,6 +328,7 @@ func parseSMB1Score(data *sheets.GridData) {
 func parseSMB2Time(data *sheets.GridData) {
 	//Store the row data and the key for this category
 	rowData := data.RowData
+	
 	parseSection(rowData,"SMB2BeginnerTime", "SMB2", 3, 2, 10, true)
 	parseSection(rowData,"SMB2BeginnerExtraTime", "SMB2", 18, 2, 10, true)
 	
@@ -321,6 +345,7 @@ func parseSMB2Time(data *sheets.GridData) {
 func parseSMB2Score(data *sheets.GridData) {
 	//Store the row data and the key for this category
 	rowData := data.RowData
+	
 	parseSection(rowData,"SMB2BeginnerScore", "SMB2", 3, 2, 10, false)
 	parseSection(rowData,"SMB2BeginnerExtraScore", "SMB2", 3, 2, 10, false)
 	
@@ -339,6 +364,7 @@ func parseSMB2Score(data *sheets.GridData) {
 func parseSMBDTime(data *sheets.GridData) {
 	//Store the row data and the key for this category
 	rowData := data.RowData
+	
 	parseSection(rowData,"SMBDBeginnerTime", "SMBD", 3, 2, 40, true)
 	parseSection(rowData,"SMBDBeginnerExtraTime", "SMBD", 48, 2, 20, true)
 	
@@ -355,6 +381,7 @@ func parseSMBDTime(data *sheets.GridData) {
 func parseSMBDScore(data *sheets.GridData) {
 	//Store the row data and the key for this category
 	rowData := data.RowData
+	
 	parseSection(rowData,"SMBDBeginnerScore", "SMBD", 3, 2, 40, false)
 	parseSection(rowData,"SMBDBeginnerExtraScore", "SMBD", 48, 2, 20, false)
 	
@@ -369,13 +396,15 @@ func parseSMBDScore(data *sheets.GridData) {
 }
 
 func parseSection(rowData []*sheets.RowData, mapKey string, game string, startRow int, startCol int, amount int, isTime bool){
+	// Find the last row
 	endRow := startRow + amount
 	
-	// Work on Advanced Time Winners
+	// Initialize the value in the map
 	records[mapKey] = make([]Record, 0, 250)
 	records[mapKey] = append(records[mapKey], Record{Index: 1, Game: game, Name: "", Holder: "", Time: "", IsTime: isTime})
 	currentIndex := 1
 	
+	// Copy all the data into it
 	for i := startRow; i < endRow; i++ {
 		name := rowData[i].Values[startCol].FormattedValue
 		time := rowData[i].Values[startCol + 1].FormattedValue
@@ -384,13 +413,19 @@ func parseSection(rowData []*sheets.RowData, mapKey string, game string, startRo
 		
 		currentIndex++
 	}
+	// Update the level count
 	records[mapKey][0].Index = currentIndex
 }
 
 func retrieveRecordString(game string, difficulty string, scoreType string, level int) (string){
+	// Construct the mapKey
 	mapKey := game + difficulty + scoreType
+	
+	// Does a value exist?
 	if _, ok := records[mapKey]; ok {
+		// If the level is not out of bounds
 		if level < records[mapKey][0].Index {
+			// Construct a string of the level record
 			record := records[mapKey][level]
 			return scoreType + ": " + record.Time + " (" + record.Holder + ")"
 		}
@@ -400,10 +435,14 @@ func retrieveRecordString(game string, difficulty string, scoreType string, leve
 }
 
 func getLevelName(game string, difficulty string, scoreType string, level int) (string){
+	// Construct the mapKey
 	mapKey := game + difficulty + scoreType
+	
+	// Does a value exist?
 	if _, ok := records[mapKey]; ok {
-		
+		// If the level is not out of bounds
 		if level < records[mapKey][0].Index {
+			// Return the level name inside of parenthesis
 			record := records[mapKey][level]
 			return "(" + record.Name + ")"
 		}
