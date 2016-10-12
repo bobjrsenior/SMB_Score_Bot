@@ -30,6 +30,8 @@ type Record struct{
 
 var retrievingData bool
 
+var skip int
+
 var records map[string][]Record
 var conf *jwt.Config
 var client *http.Client
@@ -108,12 +110,27 @@ func initializeDiscord(){
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {	
-	// Ignore all messages created by the bot itself
+	whiteListChannel1 := "235536714607755264"
+	whiteListChannel2 := "216643973932908544"
+
+	// Ignore all messages created by the bot itself or if we are updating
 	if retrievingData || m.Author.ID == discBotID {
+		return
+	}
+	
+	// Check for channel whiteListChannel1
+	if m.ChannelID != whiteListChannel1 && m.ChannelID != whiteListChannel2 {
 		return
 	}
 
 	message := m.Content
+	
+	if message == "!update" && ((m.Author.Username == "Alex" && m.Author.Discriminator == "1806") || (m.Author.Username == "CyclopsDragon" && m.Author.Discriminator == "8762") || (m.Author.Username == "bobjrsenior" && m.Author.Discriminator == "8628")) {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "Updating")
+		skip++
+		initializeSheets()
+		updateInformation()
+	}
 	
 	// Where we are in the message
 	index := 0
@@ -211,6 +228,7 @@ func main(){
 	flag.Parse()
 	
 	retrievingData = false
+	skip = 0
 	
 	// Initialize google sheets connected
 	initializeSheets()
@@ -229,7 +247,7 @@ func updateInformation(){
 	}
 
 	// Call for the SMB IL Spreadsheet
-	getCall := svc.Spreadsheets.Get("1jK-flNQS_1PHXU9o_y7oyWiog8UF8141dXn-qmSSArk")
+	getCall := svc.Spreadsheets.Get("1KoneeqJzheHFYapQ_JfyxL9sI0X8_BE7ZEVMZt0t0bI")
 	if getCall == nil{
 		fmt.Print("Error")
 		return
@@ -281,12 +299,20 @@ func updateInformation(){
 	retrievingData = false
 	
 	// Wait for a bit, then update the information
-	go func(waitInSeconds time.Duration) {
-		time.Sleep(waitInSeconds * time.Second)
+	go timeOut(7200)
+	
+}
+
+func timeOut(waitInSeconds time.Duration) {
+	time.Sleep(waitInSeconds * time.Second)
+	if !retrievingData {
 		initializeSheets()
 		updateInformation()
-	}(7200)
-	
+	}else if skip != 0{
+		go timeOut(7200)
+	}else{
+		skip--
+	}
 }
 
 func parseSMB1Time(data *sheets.GridData) {
