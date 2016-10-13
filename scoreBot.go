@@ -127,13 +127,19 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	
 	if message == "!source" {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "Source: https://github.com/bobjrsenior/SMB_Score_Bot")
-	}
-	
-	if message == "!update" && ((m.Author.Username == "Alex" && m.Author.Discriminator == "1806") || (m.Author.Username == "CyclopsDragon" && m.Author.Discriminator == "8762") || (m.Author.Username == "bobjrsenior" && m.Author.Discriminator == "8628")) {
+		return
+	}else if message == "!author" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "Created by Bobjrsenior using the SMB IL !data")
+		return
+	}else if message == "!data" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "IL Data: https://docs.google.com/spreadsheets/d/1KoneeqJzheHFYapQ_JfyxL9sI0X8_BE7ZEVMZt0t0bI/")
+		return
+	}else if message == "!update" && ((m.Author.Username == "Alex" && m.Author.Discriminator == "1806") || (m.Author.Username == "CyclopsDragon" && m.Author.Discriminator == "8762") || (m.Author.Username == "bobjrsenior" && m.Author.Discriminator == "8628")) {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "Updating")
 		skip++
 		initializeSheets()
 		updateInformation()
+		return
 	}
 	
 	// Where we are in the message
