@@ -25,6 +25,7 @@ type Record struct{
 	Name string
 	Holder string
 	Time string
+    Video string
 	IsTime bool
 }
 
@@ -449,15 +450,17 @@ func parseSection(rowData []*sheets.RowData, mapKey string, game string, startRo
 	
 	// Initialize the value in the map
 	records[mapKey] = make([]Record, 0, amount)
-	records[mapKey] = append(records[mapKey], Record{Index: 1, Game: game, Name: "", Holder: "", Time: "", IsTime: isTime})
+	records[mapKey] = append(records[mapKey], Record{Index: 1, Game: game, Name: "", Holder: "", Time: "", Video: "", IsTime: isTime})
 	currentIndex := 1
 	
 	// Copy all the data into it
 	for i := startRow; i < endRow; i++ {
 		name := rowData[i].Values[startCol].FormattedValue
 		time := rowData[i].Values[startCol + 1].FormattedValue
+        video := rowData[i].Values[startCol + 1].Hyperlink
 		holder := rowData[i].Values[startCol + 2].FormattedValue
-		records[mapKey] = append(records[mapKey], Record{Index: currentIndex, Game: game, Name: name, Holder: holder, Time: time, IsTime: isTime})
+        
+		records[mapKey] = append(records[mapKey], Record{Index: currentIndex, Game: game, Name: name, Holder: holder, Time: time, Video: video, IsTime: isTime})
 		
 		currentIndex++
 	}
@@ -475,7 +478,13 @@ func retrieveRecordString(game string, difficulty string, scoreType string, leve
 		if level < records[mapKey][0].Index {
 			// Construct a string of the level record
 			record := records[mapKey][level]
-			return scoreType + ": " + record.Time + " (" + record.Holder + ")"
+            
+            // Only add a video spot if there is a video
+            if record.Video != "" {
+                return scoreType + ": " + record.Time + " (" + record.Holder + ") (" + record.Video + ")"
+            }else{
+            return scoreType + ": " + record.Time + " (" + record.Holder + ")"
+            }
 		}
 		return ""
 	}
