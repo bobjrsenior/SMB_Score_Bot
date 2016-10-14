@@ -42,7 +42,9 @@ var (
 	privateKeyFile		= flag.String("privatekey", "", "OAuth 2.0 private key")
 	applicationName = "SMB_Score_Bot"
 	discToken    = flag.String("disctoken", "dtoken.dat", "Discord token stored in a file")
-	discBotID	string
+	sheet       =   flag.String("sheet", "", "Sheet ID to read from")
+    sheetFile   =   flag.String("sheet-file", "sheet.dat", "Sheet id to read from stored in a file")
+    discBotID	string
 )
 
 func initializeSheets() {
@@ -257,7 +259,7 @@ func updateInformation(){
 	}
 
 	// Call for the SMB IL Spreadsheet
-	getCall := svc.Spreadsheets.Get("1H2LdtEo8S4tQ0MIw05UWLDY7-ARv3-W-Wu58mD7p0yY")
+	getCall := svc.Spreadsheets.Get(valueOrFileContents(*sheet, *sheetFile))
 	if getCall == nil{
 		fmt.Print("Error")
 		return
