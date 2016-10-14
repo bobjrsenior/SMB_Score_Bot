@@ -257,7 +257,7 @@ func updateInformation(){
 	}
 
 	// Call for the SMB IL Spreadsheet
-	getCall := svc.Spreadsheets.Get("1KoneeqJzheHFYapQ_JfyxL9sI0X8_BE7ZEVMZt0t0bI")
+	getCall := svc.Spreadsheets.Get("1H2LdtEo8S4tQ0MIw05UWLDY7-ARv3-W-Wu58mD7p0yY")
 	if getCall == nil{
 		fmt.Print("Error")
 		return
