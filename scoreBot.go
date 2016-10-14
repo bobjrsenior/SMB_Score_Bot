@@ -30,6 +30,8 @@ type Record struct{
 
 var retrievingData bool
 
+var testMode bool
+
 var skip int
 
 var records map[string][]Record
@@ -44,6 +46,7 @@ var (
 	discToken    = flag.String("disctoken", "dtoken.dat", "Discord token stored in a file")
 	sheet       =   flag.String("sheet", "", "Sheet ID to read from")
     sheetFile   =   flag.String("sheet-file", "sheet.dat", "Sheet id to read from stored in a file")
+    testModeStr = flag.String("test", "NO", "Is it in test mode?")
     discBotID	string
 )
 
@@ -113,7 +116,12 @@ func initializeDiscord(){
 // message is created on any channel that the autenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {	
 	whiteListChannel1 := "235536714607755264"
-	whiteListChannel2 := "216643973932908544"
+    
+	var whiteListChannel2 string
+    
+    if !testMode {
+        whiteListChannel2 = "216643973932908544"
+    }
 
 	// Ignore all messages created by the bot itself or if we are updating
 	if retrievingData || m.Author.ID == discBotID {
@@ -238,7 +246,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 func main(){
 	flag.Parse()
-	
+	if *testModeStr != "NO" {
+        testMode = true
+    }
 	retrievingData = false
 	skip = 0
 	
