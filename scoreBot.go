@@ -159,22 +159,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Make sure the message is long enough
 	if len(message) >= 3 && message[index] == '!' {
 		index++
-		// TODO after the bot actually works
-		/*
-		game := ""
-		if message[index] == '1' {
-			game = "SMB1"
-			index++
-		}
-		else if message[index] == '2' {
-			game = "SMB2"
-			index++
-		}
-		else if message[index] == 'D' {
-			game = "SMBD"
-			index++
-		}
-		*/
+		
+		isStory := false
 		
 		// Retrieve the difficulty
 		difficulty := ""
@@ -186,59 +172,116 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			difficulty = "Expert"
 		}else if message[index] == 'm' {
 			difficulty = "Master"
+		}else if message[index] == 's' {
+			difficulty = "Story"
+			isStory = true
 		}else{
 			return
 		}
 		index++
 		
 		// Check if it is an Extra stage
-		if message[index] == 'x' {
+		if !isStory && message[index] == 'x' {
 			index++
 			if len(message) == 3 {
 				return
 			}
 			difficulty += "Extra"
 		}
+		var level int
+		var world string
+		var err error
 		
-		// Get the level requested and convert it into an int
-		levelString := message[index:len(message)]
-		level, err := strconv.Atoi(levelString)
-		if err != nil {
-			return
+		if !isStory {
+			// Get the level requested and convert it into an int
+			levelString := message[index:len(message)]
+			level, err = strconv.Atoi(levelString)
+			if err != nil {
+				return
+			}
+		}else{
+			if len(message) < 5 {
+				return
+			}
+			if message[index + 1] == '-' {
+				world = message[index:(index + 1)]
+				index += 2
+			}else{
+				if len(message) < 6 {
+					return
+				}
+				world = message[index:(index + 2)]
+				index += 3
+			}
+			levelString := message[index:len(message)]
+			level, err = strconv.Atoi(levelString)
+			if err != nil {
+				return
+			}
 		}
 		// Start building the return message
 		returnMessage := ""
 		
-		// Get the formatted record holders for smb1
-		smb1Time := retrieveRecordString("SMB1", difficulty, "Time", level)
-		smb1Score := retrieveRecordString("SMB1", difficulty, "Score", level)
-		// If a record exists
-		if smb1Time != "" {
-			// Add smb1 information to the return message
-			smb1Name := "SMB1 " + getLevelName("SMB1", difficulty, "Time", level)
-			returnMessage += smb1Name + ": " + smb1Time + ", " + smb1Score + "\n"
+		if !isStory {
+			// Get the formatted record holders for smb1
+			smb1Time := retrieveRecordString("SMB1", difficulty, "Time", level)
+			smb1Score := retrieveRecordString("SMB1", difficulty, "Score", level)
+			// If a record exists
+			if smb1Time != "" {
+				// Add smb1 information to the return message
+				smb1Name := "SMB1 " + getLevelName("SMB1", difficulty, "Time", level)
+				returnMessage += smb1Name + ": " + smb1Time + ", " + smb1Score + "\n"
+			}
+			
+			// Get the formatted record holders for smb2
+			smb2Time := retrieveRecordString("SMB2", difficulty, "Time", level)
+			smb2Score := retrieveRecordString("SMB2", difficulty, "Score", level)
+			// If a record exists
+			if smb2Time != "" {
+				// Add smb2 information to the return message
+				smb2Name := "SMB2 " + getLevelName("SMB2", difficulty, "Time", level)
+				returnMessage += smb2Name + ": " + smb2Time + ", " + smb2Score + "\n"
+			}
+			
+			// Get the formatted record holders for smbd
+			smbDTime := retrieveRecordString("SMBD", difficulty, "Time", level)
+			smbDScore := retrieveRecordString("SMBD", difficulty, "Score", level)
+			// If a record exists
+			if smbDTime != "" {
+				// Add smbd information to the return message
+				smbDName := "SMBDX " + getLevelName("SMBD", difficulty, "Time", level)
+				returnMessage += smbDName + ": " + smbDTime + ", " + smbDScore + "\n"
+			}
+		}else{
+			// Get the formatted record holders for smb2
+			smb2StoryTime := retrieveRecordStoryString("SMB2", difficulty, "Time", world, level)
+			smb2StoryScore := retrieveRecordStoryString("SMB2", difficulty, "Score", world, level)
+			// If a record exists
+			if smb2StoryTime != "" {
+				// Add smb2 information to the return message
+				smb2Name := "SMB2 " + getStoryLevelName("SMB2", difficulty, "Time", world, level)
+				if smb2StoryTime == "Duplicate Stage" {
+					returnMessage += smb2Name + ": " + smb2StoryTime
+				}else{
+					returnMessage += smb2Name + ": " + smb2StoryTime + ", " + smb2StoryScore + "\n"
+				}
+			}
+			/*
+			// Get the formatted record holders for smbd
+			smbdStoryTime := retrieveRecordStoryString("SMBD", difficulty, "Time", world, level)
+			smbdStoryScore := retrieveRecordStoryString("SMBD", difficulty, "Score", world, level)
+			// If a record exists
+			if smb2StoryTime != "" {
+				// Add smb2 information to the return message
+				smbdName := "SMBDX " + getStoryLevelName("SMBD", difficulty, "Time", world, level)
+				if smbdStoryTime == "Duplicate Stage" {
+					returnMessage += smbdName + ": " + smbdStoryTime
+				}else{
+					returnMessage += smbdName + ": " + smbdStoryTime + ", " + smbdStoryScore + "\n"
+				}
+			}
+			*/
 		}
-		
-		// Get the formatted record holders for smb2
-		smb2Time := retrieveRecordString("SMB2", difficulty, "Time", level)
-		smb2Score := retrieveRecordString("SMB2", difficulty, "Score", level)
-		// If a record exists
-		if smb2Time != "" {
-			// Add smb2 information to the return message
-			smb2Name := "SMB2 " + getLevelName("SMB2", difficulty, "Time", level)
-			returnMessage += smb2Name + ": " + smb2Time + ", " + smb2Score + "\n"
-		}
-		
-		// Get the formatted record holders for smbd
-		smbDTime := retrieveRecordString("SMBD", difficulty, "Time", level)
-		smbDScore := retrieveRecordString("SMBD", difficulty, "Score", level)
-		// If a record exists
-		if smbDTime != "" {
-			// Add smbd information to the return message
-			smbDName := "SMBDX " + getLevelName("SMBD", difficulty, "Time", level)
-			returnMessage += smbDName + ": " + smbDTime + ", " + smbDScore + "\n"
-		}
-		
 		_, _ = s.ChannelMessageSend(m.ChannelID, returnMessage)
 		
 	}
@@ -308,6 +351,9 @@ func updateInformation(){
 				break
 				case "SMB2 Challenge Score":
 					parseSMB2Score(data)
+				break
+				case "SMB2 Story":
+					parseSMB2Story(data)
 				break
 				case "SMBDX Challenge Time":
 					parseSMBDTime(data)
@@ -409,6 +455,42 @@ func parseSMB2Score(data *sheets.GridData) {
 	
 }
 
+func parseSMB2Story(data *sheets.GridData) {
+	//Store the row data and the key for this category
+	rowData := data.RowData
+	
+	parseSection(rowData,"SMB2Story1Time", "SMB2", 3, 2, 10, true)
+	parseSection(rowData,"SMB2Story1Score", "SMB2", 3, 7, 10, false)
+	
+	parseSection(rowData,"SMB2Story2Time", "SMB2", 3, 12, 10, true)
+	parseSection(rowData,"SMB2Story2Score", "SMB2", 3, 17, 10, false)
+	
+	parseSection(rowData,"SMB2Story3Time", "SMB2", 16, 2, 10, true)
+	parseSection(rowData,"SMB2Story3Score", "SMB2", 16, 7, 10, false)
+	
+	parseSection(rowData,"SMB2Story4Time", "SMB2", 16, 12, 10, true)
+	parseSection(rowData,"SMB2Story4Score", "SMB2", 16, 17, 10, false)
+	
+	parseSection(rowData,"SMB2Story5Time", "SMB2", 29, 2, 10, true)
+	parseSection(rowData,"SMB2Story5Score", "SMB2", 29, 7, 10, false)
+	
+	parseSection(rowData,"SMB2Story6Time", "SMB2", 29, 12, 10, true)
+	parseSection(rowData,"SMB2Story6Score", "SMB2", 29, 17, 10, false)
+	
+	parseSection(rowData,"SMB2Story7Time", "SMB2", 42, 2, 10, true)
+	parseSection(rowData,"SMB2Story7Score", "SMB2", 42, 7, 10, false)
+	
+	parseSection(rowData,"SMB2Story8Time", "SMB2", 42, 12, 10, true)
+	parseSection(rowData,"SMB2Story8Score", "SMB2", 42, 17, 10, false)
+	
+	parseSection(rowData,"SMB2Story9Time", "SMB2", 55, 2, 10, true)
+	parseSection(rowData,"SMB2Story9Score", "SMB2", 55, 7, 10, false)
+	
+	parseSection(rowData,"SMB2Story10Time", "SMB2", 55, 12, 10, true)
+	parseSection(rowData,"SMB2Story10Score", "SMB2", 55, 17, 10, false)
+	
+}
+
 // Finish Alts
 func parseSMBDTime(data *sheets.GridData) {
 	//Store the row data and the key for this category
@@ -459,7 +541,7 @@ func parseSection(rowData []*sheets.RowData, mapKey string, game string, startRo
 		time := rowData[i].Values[startCol + 1].FormattedValue
         video := rowData[i].Values[startCol + 1].Hyperlink
 		holder := rowData[i].Values[startCol + 2].FormattedValue
-        
+
 		records[mapKey] = append(records[mapKey], Record{Index: currentIndex, Game: game, Name: name, Holder: holder, Time: time, Video: video, IsTime: isTime})
 		
 		currentIndex++
@@ -491,9 +573,52 @@ func retrieveRecordString(game string, difficulty string, scoreType string, leve
 	return ""
 }
 
+func retrieveRecordStoryString(game string, difficulty string, scoreType string, world string, level int) (string){
+		// Construct the mapKey
+	mapKey := game + difficulty + world + scoreType
+	
+	// Does a value exist?
+	if _, ok := records[mapKey]; ok {
+		// If the level is not out of bounds
+		if level < records[mapKey][0].Index {
+			// Construct a string of the level record
+			record := records[mapKey][level]
+			
+            if record.Time == "N/A" {
+				return "Duplicate Stage"
+			}
+            // Only add a video spot if there is a video
+            if record.Video != "" {
+                return scoreType + ": " + record.Time + " (" + record.Holder + ") (" + record.Video + ")"
+            }else{
+            return scoreType + ": " + record.Time + " (" + record.Holder + ")"
+            }
+		}
+		return ""
+	}
+	return ""
+}
+
 func getLevelName(game string, difficulty string, scoreType string, level int) (string){
 	// Construct the mapKey
 	mapKey := game + difficulty + scoreType
+	
+	// Does a value exist?
+	if _, ok := records[mapKey]; ok {
+		// If the level is not out of bounds
+		if level < records[mapKey][0].Index {
+			// Return the level name inside of parenthesis
+			record := records[mapKey][level]
+			return "(" + record.Name + ")"
+		}
+		return ""
+	}
+	return ""
+}
+
+func getStoryLevelName(game string, difficulty string, scoreType string, world string, level int) (string){
+	// Construct the mapKey
+	mapKey := game + difficulty + world + scoreType
 	
 	// Does a value exist?
 	if _, ok := records[mapKey]; ok {
