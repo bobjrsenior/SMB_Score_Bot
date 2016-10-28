@@ -557,7 +557,7 @@ func retrieveRecordString(game string, difficulty string, scoreType string, leve
 	// Does a value exist?
 	if _, ok := records[mapKey]; ok {
 		// If the level is not out of bounds
-		if level < records[mapKey][0].Index {
+		if level > 0 && level < records[mapKey][0].Index {
 			// Construct a string of the level record
 			record := records[mapKey][level]
             
@@ -580,7 +580,7 @@ func retrieveRecordStoryString(game string, difficulty string, scoreType string,
 	// Does a value exist?
 	if _, ok := records[mapKey]; ok {
 		// If the level is not out of bounds
-		if level < records[mapKey][0].Index {
+		if level > 0 && level < records[mapKey][0].Index {
 			// Construct a string of the level record
 			record := records[mapKey][level]
 			
@@ -606,7 +606,7 @@ func getLevelName(game string, difficulty string, scoreType string, level int) (
 	// Does a value exist?
 	if _, ok := records[mapKey]; ok {
 		// If the level is not out of bounds
-		if level < records[mapKey][0].Index {
+		if level > 0 && level < records[mapKey][0].Index {
 			// Return the level name inside of parenthesis
 			record := records[mapKey][level]
 			return "(" + record.Name + ")"
@@ -623,7 +623,7 @@ func getStoryLevelName(game string, difficulty string, scoreType string, world s
 	// Does a value exist?
 	if _, ok := records[mapKey]; ok {
 		// If the level is not out of bounds
-		if level < records[mapKey][0].Index {
+		if level > 0 && level < records[mapKey][0].Index {
 			// Return the level name inside of parenthesis
 			record := records[mapKey][level]
 			return "(" + record.Name + ")"
