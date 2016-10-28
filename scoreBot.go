@@ -431,10 +431,10 @@ func parseSMB2Time(data *sheets.GridData) {
 	parseSection(rowData,"SMB2AdvancedExtraTime", "SMB2", 38, 7, 10, true)
 	
 	parseSection(rowData,"SMB2ExpertTime", "SMB2", 3, 12, 50, true)
-	parseSection(rowData,"SMB2ExpertExtraTime", "SMB2", 58, 12, 10, true)
+	parseSection(rowData,"SMB2ExpertExtraTime", "SMB2", 18, 12, 10, true)
 	
 	parseSection(rowData,"SMB2MasterTime", "SMB2", 3, 17, 10, true)
-	parseSection(rowData,"SMB2MasterExtraTime", "SMB2", 19, 17, 10, true)
+	parseSection(rowData,"SMB2MasterExtraTime", "SMB2", 18, 17, 10, true)
 }
 
 func parseSMB2Score(data *sheets.GridData) {
@@ -448,10 +448,10 @@ func parseSMB2Score(data *sheets.GridData) {
 	parseSection(rowData,"SMB2AdvancedExtraScore", "SMB2", 38, 7, 10, false)
 	
 	parseSection(rowData,"SMB2ExpertScore", "SMB2", 3, 12, 50, false)
-	parseSection(rowData,"SMB2ExpertExtraScore", "SMB2", 58, 12, 10, false)
+	parseSection(rowData,"SMB2ExpertExtraScore", "SMB2", 18, 12, 10, false)
 	
 	parseSection(rowData,"SMB2MasterScore", "SMB2", 3, 17, 10, false)
-	parseSection(rowData,"SMB2MasterExtraScore", "SMB2", 19, 17, 10, false)
+	parseSection(rowData,"SMB2MasterExtraScore", "SMB2", 18, 17, 10, false)
 	
 }
 
