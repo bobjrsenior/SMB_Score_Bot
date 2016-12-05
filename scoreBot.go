@@ -261,12 +261,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				// Add smb2 information to the return message
 				smb2Name := "SMB2 " + getStoryLevelName("SMB2", difficulty, "Time", world, level)
 				if smb2StoryTime == "Duplicate Stage" {
-					returnMessage += smb2Name + ": " + smb2StoryTime
+					returnMessage += smb2Name + ": " + smb2StoryTime + "\n"
 				}else{
 					returnMessage += smb2Name + ": " + smb2StoryTime + ", " + smb2StoryScore + "\n"
 				}
 			}
-			/*
 			// Get the formatted record holders for smbd
 			smbdStoryTime := retrieveRecordStoryString("SMBD", difficulty, "Time", world, level)
 			smbdStoryScore := retrieveRecordStoryString("SMBD", difficulty, "Score", world, level)
@@ -275,12 +274,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				// Add smb2 information to the return message
 				smbdName := "SMBDX " + getStoryLevelName("SMBD", difficulty, "Time", world, level)
 				if smbdStoryTime == "Duplicate Stage" {
-					returnMessage += smbdName + ": " + smbdStoryTime
+					returnMessage += smbdName + ": " + smbdStoryTime + "\n"
 				}else{
 					returnMessage += smbdName + ": " + smbdStoryTime + ", " + smbdStoryScore + "\n"
 				}
 			}
-			*/
 		}
 		_, _ = s.ChannelMessageSend(m.ChannelID, returnMessage)
 		
@@ -361,6 +359,9 @@ func updateInformation(){
 				case "SMBDX Challenge Score":
 					parseSMBDScore(data)
 				break
+				case "SMBDX Story":
+					parseSMBDStory(data);
+				break;
 			}
 		}
 	}
@@ -526,6 +527,42 @@ func parseSMBDScore(data *sheets.GridData) {
 	parseSection(rowData,"SMBDMasterExtraScore", "SMBD", 28, 17, 10, false)
 }
 
+func parseSMBDStory(data *sheets.GridData) {
+	//Store the row data and the key for this category
+	rowData := data.RowData
+	
+	parseSection(rowData,"SMBDStory1Time", "SMBD", 3, 2, 20, true)
+	parseSection(rowData,"SMBDStory1Score", "SMBD", 3, 7, 20, false)
+	
+	parseSection(rowData,"SMBDStory2Time", "SMBD", 3, 12, 20, true)
+	parseSection(rowData,"SMBDStory2Score", "SMBD", 3, 17, 20, false)
+	
+	parseSection(rowData,"SMBDStory3Time", "SMBD", 26, 2, 20, true)
+	parseSection(rowData,"SMBDStory3Score", "SMBD", 26, 7, 20, false)
+	
+	parseSection(rowData,"SMBDStory4Time", "SMBD", 26, 12, 20, true)
+	parseSection(rowData,"SMBDStory4Score", "SMBD", 26, 17, 20, false)
+	
+	parseSection(rowData,"SMBDStory5Time", "SMBD", 49, 2, 20, true)
+	parseSection(rowData,"SMBDStory5Score", "SMBD", 49, 7, 20, false)
+	
+	parseSection(rowData,"SMBDStory6Time", "SMBD", 49, 12, 20, true)
+	parseSection(rowData,"SMBDStory6Score", "SMBD", 49, 17, 20, false)
+	
+	parseSection(rowData,"SMBDStory7Time", "SMBD", 72, 2, 20, true)
+	parseSection(rowData,"SMBDStory7Score", "SMBD", 72, 7, 20, false)
+	
+	parseSection(rowData,"SMBDStory8Time", "SMBD", 72, 12, 20, true)
+	parseSection(rowData,"SMBDStory8Score", "SMBD", 72, 17, 20, false)
+	
+	parseSection(rowData,"SMBDStory9Time", "SMBD", 95, 2, 20, true)
+	parseSection(rowData,"SMBDStory9Score", "SMBD", 95, 7, 20, false)
+	
+	parseSection(rowData,"SMBDStory10Time", "SMBD", 95, 12, 20, true)
+	parseSection(rowData,"SMBDStory10Score", "SMBD", 95, 17, 20, false)
+	
+}
+
 func parseSection(rowData []*sheets.RowData, mapKey string, game string, startRow int, startCol int, amount int, isTime bool){
 	// Find the last row
 	endRow := startRow + amount
@@ -560,12 +597,23 @@ func retrieveRecordString(game string, difficulty string, scoreType string, leve
 		if level > 0 && level < records[mapKey][0].Index {
 			// Construct a string of the level record
 			record := records[mapKey][level]
-            
+            time := record.Time
+			holder := record.Holder
+			
+			if holder == "" {
+				if record.IsTime {
+					time = "60.00"
+				}else{
+					time = "0"
+				}
+				holder = "Could be you"
+			}
+			
             // Only add a video spot if there is a video
             if record.Video != "" {
-                return scoreType + ": " + record.Time + " (" + record.Holder + ") (" + record.Video + ")"
+                return scoreType + ": " + time + " (" + holder + ") (" + record.Video + ")"
             }else{
-            return scoreType + ": " + record.Time + " (" + record.Holder + ")"
+            return scoreType + ": " + time + " (" + holder + ")"
             }
 		}
 		return ""
@@ -587,11 +635,23 @@ func retrieveRecordStoryString(game string, difficulty string, scoreType string,
             if record.Time == "N/A" {
 				return "Duplicate Stage"
 			}
+			time := record.Time
+			holder := record.Holder
+
+			if holder == "" {
+				if record.IsTime {
+					time = "60.00"
+				}else{
+					time = "0"
+				}
+				holder = "Could be you"
+			}
+			
             // Only add a video spot if there is a video
             if record.Video != "" {
-                return scoreType + ": " + record.Time + " (" + record.Holder + ") (" + record.Video + ")"
+                return scoreType + ": " + time + " (" + holder + ") (" + record.Video + ")"
             }else{
-            return scoreType + ": " + record.Time + " (" + record.Holder + ")"
+				return scoreType + ": " + time + " (" + holder + ")"
             }
 		}
 		return ""
