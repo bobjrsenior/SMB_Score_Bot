@@ -270,7 +270,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			smbdStoryTime := retrieveRecordStoryString("SMBD", difficulty, "Time", world, level)
 			smbdStoryScore := retrieveRecordStoryString("SMBD", difficulty, "Score", world, level)
 			// If a record exists
-			if smb2StoryTime != "" {
+			if smbdStoryTime != "" {
 				// Add smb2 information to the return message
 				smbdName := "SMBDX " + getStoryLevelName("SMBD", difficulty, "Time", world, level)
 				if smbdStoryTime == "Duplicate Stage" {
