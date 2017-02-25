@@ -610,7 +610,7 @@ func retrieveRecordString(game string, difficulty string, scoreType string, leve
 
 			// Only add a video spot if there is a video
 			if record.Video != "" {
-				return scoreType + ": " + time + " (" + holder + ") (" + record.Video + ")"
+				return scoreType + ": " + time + " (" + holder + ") (<" + record.Video + ">)"
 			} else {
 				return scoreType + ": " + time + " (" + holder + ")"
 			}
@@ -648,7 +648,7 @@ func retrieveRecordStoryString(game string, difficulty string, scoreType string,
 
 			// Only add a video spot if there is a video
 			if record.Video != "" {
-				return scoreType + ": " + time + " (" + holder + ") (" + record.Video + ")"
+				return scoreType + ": " + time + " (" + holder + ") (<" + record.Video + ">)"
 			} else {
 				return scoreType + ": " + time + " (" + holder + ")"
 			}
